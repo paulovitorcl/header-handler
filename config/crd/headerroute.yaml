@@ -1,0 +1,126 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: headerroutes.routing.example.com
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+spec:
+  group: routing.example.com
+  names:
+    kind: HeaderRoute
+    listKind: HeaderRouteList
+    plural: headerroutes
+    singular: headerroute
+    shortNames:
+      - hr
+      - hroute
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: HeaderRoute is the Schema for the headerroutes API
+          properties:
+            apiVersion:
+              type: string
+              description: 'APIVersion defines the versioned schema of this representation of an object.'
+            kind:
+              type: string
+              description: 'Kind is a string value representing the REST resource this object represents.'
+            metadata:
+              type: object
+            spec:
+              type: object
+              description: HeaderRouteSpec defines the desired state of HeaderRoute
+              required:
+                - headerName
+                - headerValue
+                - backend
+              properties:
+                headerName:
+                  type: string
+                  description: HeaderName is the HTTP header name to match (e.g., "X-App", "X-Tenant")
+                  minLength: 1
+                  maxLength: 256
+                  pattern: "^[A-Za-z0-9-_]+$"
+                headerValue:
+                  type: string
+                  description: HeaderValue is the value to match for the header
+                  minLength: 1
+                  maxLength: 1024
+                backend:
+                  type: object
+                  description: Backend defines where to route matching requests
+                  required:
+                    - name
+                    - port
+                  properties:
+                    name:
+                      type: string
+                      description: Name of the Service
+                      minLength: 1
+                      maxLength: 253
+                    namespace:
+                      type: string
+                      description: Namespace of the Service (defaults to HeaderRoute namespace)
+                      maxLength: 253
+                    port:
+                      type: integer
+                      description: Port number on the Service
+                      format: int32
+                      minimum: 1
+                      maximum: 65535
+                priority:
+                  type: integer
+                  description: Priority defines route evaluation order (higher = evaluated first)
+                  format: int32
+                  default: 0
+                  minimum: 0
+                  maximum: 10000
+            status:
+              type: object
+              description: HeaderRouteStatus defines the observed state of HeaderRoute
+              properties:
+                ready:
+                  type: boolean
+                  description: Ready indicates if the route is configured in Envoy
+                message:
+                  type: string
+                  description: Message provides additional status information
+                lastUpdated:
+                  type: string
+                  format: date-time
+                  description: LastUpdated is the last time the route was processed
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Header
+          type: string
+          description: The HTTP header name to match
+          jsonPath: .spec.headerName
+        - name: Value
+          type: string
+          description: The header value to match
+          jsonPath: .spec.headerValue
+        - name: Backend
+          type: string
+          description: Target service name
+          jsonPath: .spec.backend.name
+        - name: Port
+          type: integer
+          description: Target service port
+          jsonPath: .spec.backend.port
+        - name: Priority
+          type: integer
+          description: Route priority
+          jsonPath: .spec.priority
+        - name: Ready
+          type: boolean
+          description: Whether route is configured
+          jsonPath: .status.ready
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp

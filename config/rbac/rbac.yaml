@@ -1,0 +1,147 @@
+---
+# ServiceAccount for the controller
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: header-route-controller
+  namespace: poc
+  labels:
+    app.kubernetes.io/name: header-route-controller
+    app.kubernetes.io/component: controller
+
+---
+# ClusterRole with permissions needed by the controller
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: header-route-controller
+  labels:
+    app.kubernetes.io/name: header-route-controller
+    app.kubernetes.io/component: controller
+rules:
+  # HeaderRoute CRD permissions
+  - apiGroups:
+      - routing.example.com
+    resources:
+      - headerroutes
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  
+  # HeaderRoute status permissions
+  - apiGroups:
+      - routing.example.com
+    resources:
+      - headerroutes/status
+    verbs:
+      - get
+      - update
+      - patch
+  
+  # HeaderRoute finalizers
+  - apiGroups:
+      - routing.example.com
+    resources:
+      - headerroutes/finalizers
+    verbs:
+      - update
+  
+  # ConfigMap permissions (for Envoy config)
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+  
+  # Events (for recording events)
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+
+---
+# ClusterRoleBinding to bind the role to the service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: header-route-controller
+  labels:
+    app.kubernetes.io/name: header-route-controller
+    app.kubernetes.io/component: controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: header-route-controller
+subjects:
+  - kind: ServiceAccount
+    name: header-route-controller
+    namespace: poc
+
+---
+# Role for leader election (namespace-scoped)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: header-route-controller-leader-election
+  namespace: poc
+  labels:
+    app.kubernetes.io/name: header-route-controller
+    app.kubernetes.io/component: controller
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+
+---
+# RoleBinding for leader election
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: header-route-controller-leader-election
+  namespace: poc
+  labels:
+    app.kubernetes.io/name: header-route-controller
+    app.kubernetes.io/component: controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: header-route-controller-leader-election
+subjects:
+  - kind: ServiceAccount
+    name: header-route-controller
+    namespace: poc
