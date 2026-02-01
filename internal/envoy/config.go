@@ -2,7 +2,6 @@ package envoy
 
 import (
 	"fmt"
-	"sort"
 
 	routingv1alpha1 "github.com/seu-user/header-route-controller/api/v1alpha1"
 )
@@ -132,19 +131,12 @@ type DefaultBackend struct {
 
 // GenerateEnvoyConfig generates Envoy configuration from HeaderRoute resources
 func GenerateEnvoyConfig(routes []routingv1alpha1.HeaderRoute, defaultBackend *DefaultBackend) Config {
-	// Sort routes by priority (higher priority first)
-	sortedRoutes := make([]routingv1alpha1.HeaderRoute, len(routes))
-	copy(sortedRoutes, routes)
-	sort.Slice(sortedRoutes, func(i, j int) bool {
-		return sortedRoutes[i].Spec.Priority > sortedRoutes[j].Spec.Priority
-	})
-
 	// Build routes and collect unique clusters
-	envoyRoutes := make([]Route, 0, len(sortedRoutes)+1)
+	envoyRoutes := make([]Route, 0, len(routes)+1)
 	clusters := make([]Cluster, 0)
 	clusterSet := make(map[string]bool)
 
-	for _, hr := range sortedRoutes {
+	for _, hr := range routes {
 		clusterName := generateClusterName(hr.Spec.Backend.Name, hr.Spec.Backend.Namespace, hr.Namespace)
 		
 		// Add route

@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // HeaderRouteSpec defines the desired state of HeaderRoute
@@ -14,10 +15,6 @@ type HeaderRouteSpec struct {
 
 	// Backend defines where to route matching requests
 	Backend BackendRef `json:"backend"`
-
-	// Priority defines route evaluation order (higher = evaluated first)
-	// +optional
-	Priority int32 `json:"priority,omitempty"`
 }
 
 // BackendRef references a Kubernetes Service
@@ -90,7 +87,7 @@ func (in *HeaderRoute) DeepCopy() *HeaderRoute {
 }
 
 // DeepCopyObject creates a deep copy as runtime.Object
-func (in *HeaderRoute) DeepCopyObject() interface{} {
+func (in *HeaderRoute) DeepCopyObject() runtime.Object {
 	return in.DeepCopy()
 }
 
@@ -119,6 +116,6 @@ func (in *HeaderRouteList) DeepCopy() *HeaderRouteList {
 }
 
 // DeepCopyObject creates a deep copy as runtime.Object
-func (in *HeaderRouteList) DeepCopyObject() interface{} {
+func (in *HeaderRouteList) DeepCopyObject() runtime.Object {
 	return in.DeepCopy()
 }

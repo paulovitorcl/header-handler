@@ -37,7 +37,6 @@ This controller enables **header-based routing** in Kubernetes. It allows you to
 ## ✨ Features
 
 - **Header-based routing**: Route requests based on any HTTP header
-- **Priority support**: Control route evaluation order
 - **Default backend**: Fallback service for unmatched requests
 - **404 response**: Return error when no route matches (if no default backend)
 - **Dynamic configuration**: Envoy config updated automatically on CRD changes
@@ -77,15 +76,12 @@ spec:
   # Header to match
   headerName: X-Tenant
   headerValue: tenant-a
-  
+
   # Target backend
   backend:
     name: app-tenant-a
     namespace: poc  # optional, defaults to HeaderRoute namespace
     port: 80
-  
-  # Route priority (higher = evaluated first)
-  priority: 100
 ```
 
 ## ⚙️ Configuration
@@ -153,13 +149,12 @@ spec:
 
 1. **Watch**: Controller watches all `HeaderRoute` resources
 2. **Collect**: On any change, it lists all routes
-3. **Sort**: Routes are sorted by priority (highest first)
-4. **Generate**: Creates Envoy configuration with:
+3. **Generate**: Creates Envoy configuration with:
    - Routes for each HeaderRoute (header match → cluster)
    - Default backend route (if configured)
    - 404 response (if no default backend)
-5. **Update**: Writes config to ConfigMap
-6. **Reload**: Envoy reads the ConfigMap (via volume mount)
+4. **Update**: Writes config to ConfigMap
+5. **Reload**: Envoy reads the ConfigMap (via volume mount)
 
 ## 📊 Generated Envoy Config
 

@@ -73,13 +73,6 @@ spec:
                       format: int32
                       minimum: 1
                       maximum: 65535
-                priority:
-                  type: integer
-                  description: Priority defines route evaluation order (higher = evaluated first)
-                  format: int32
-                  default: 0
-                  minimum: 0
-                  maximum: 10000
             status:
               type: object
               description: HeaderRouteStatus defines the observed state of HeaderRoute
@@ -113,10 +106,6 @@ spec:
           type: integer
           description: Target service port
           jsonPath: .spec.backend.port
-        - name: Priority
-          type: integer
-          description: Route priority
-          jsonPath: .spec.priority
         - name: Ready
           type: boolean
           description: Whether route is configured
